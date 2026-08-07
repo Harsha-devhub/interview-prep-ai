@@ -14,7 +14,200 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assessment_results: {
+        Row: {
+          correct_answers: number
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          score: number
+          topic: string
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          correct_answers: number
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          score: number
+          topic: string
+          total_questions: number
+          user_id: string
+        }
+        Update: {
+          correct_answers?: number
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          score?: number
+          topic?: string
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mock_interviews: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          feedback: Json | null
+          id: string
+          interview_type: string
+          overall_score: number | null
+          role: string
+          status: string
+          transcript: Json
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          feedback?: Json | null
+          id?: string
+          interview_type?: string
+          overall_score?: number | null
+          role: string
+          status?: string
+          transcript?: Json
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          feedback?: Json | null
+          id?: string
+          interview_type?: string
+          overall_score?: number | null
+          role?: string
+          status?: string
+          transcript?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      practice_attempts: {
+        Row: {
+          category: string
+          created_at: string
+          feedback: string | null
+          id: string
+          question_id: string | null
+          question_text: string
+          score: number
+          topic: string | null
+          user_answer: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          question_id?: string | null
+          question_text: string
+          score?: number
+          topic?: string | null
+          user_answer: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          question_id?: string | null
+          question_text?: string
+          score?: number
+          topic?: string | null
+          user_answer?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_attempts_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          experience_level: string
+          full_name: string | null
+          id: string
+          skills: string[]
+          target_role: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          experience_level?: string
+          full_name?: string | null
+          id?: string
+          skills?: string[]
+          target_role?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          experience_level?: string
+          full_name?: string | null
+          id?: string
+          skills?: string[]
+          target_role?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          category: string
+          correct_option: number | null
+          created_at: string
+          difficulty: string
+          id: string
+          model_answer: string | null
+          options: Json | null
+          question: string
+          role: string | null
+          topic: string
+        }
+        Insert: {
+          category: string
+          correct_option?: number | null
+          created_at?: string
+          difficulty?: string
+          id?: string
+          model_answer?: string | null
+          options?: Json | null
+          question: string
+          role?: string | null
+          topic: string
+        }
+        Update: {
+          category?: string
+          correct_option?: number | null
+          created_at?: string
+          difficulty?: string
+          id?: string
+          model_answer?: string | null
+          options?: Json | null
+          question?: string
+          role?: string | null
+          topic?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
