@@ -52,10 +52,11 @@ function ProgressPage() {
 
   const byTopic = new Map<string, { total: number; count: number }>();
   for (const a of attempts) {
-    const e = byTopic.get(a.topic) ?? { total: 0, count: 0 };
+    const key = a.topic ?? "General";
+    const e = byTopic.get(key) ?? { total: 0, count: 0 };
     e.total += a.score ?? 0;
     e.count += 1;
-    byTopic.set(a.topic, e);
+    byTopic.set(key, e);
   }
   const topicData = [...byTopic.entries()]
     .map(([topic, v]) => ({ topic, score: Math.round(v.total / v.count) }))
