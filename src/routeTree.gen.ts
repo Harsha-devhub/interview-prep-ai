@@ -20,6 +20,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProgressRouteImport } from './routes/_authenticated/progress'
 import { Route as AuthenticatedQuestionBankRouteImport } from './routes/_authenticated/question-bank'
 import { Route as AuthenticatedRoadmapRouteImport } from './routes/_authenticated/roadmap'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -78,6 +79,11 @@ const AuthenticatedRoadmapRoute = AuthenticatedRoadmapRouteImport.update({
   path: '/roadmap',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/progress': typeof AuthenticatedProgressRoute
   '/question-bank': typeof AuthenticatedQuestionBankRoute
   '/roadmap': typeof AuthenticatedRoadmapRoute
+  '/settings': typeof AuthenticatedSettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/progress': typeof AuthenticatedProgressRoute
   '/question-bank': typeof AuthenticatedQuestionBankRoute
   '/roadmap': typeof AuthenticatedRoadmapRoute
+  '/settings': typeof AuthenticatedSettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/_authenticated/progress': typeof AuthenticatedProgressRoute
   '/_authenticated/question-bank': typeof AuthenticatedQuestionBankRoute
   '/_authenticated/roadmap': typeof AuthenticatedRoadmapRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/progress'
     | '/question-bank'
     | '/roadmap'
+    | '/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/progress'
     | '/question-bank'
     | '/roadmap'
+    | '/settings'
   id:
     | '__root__'
     | '/'
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/_authenticated/progress'
     | '/_authenticated/question-bank'
     | '/_authenticated/roadmap'
+    | '/_authenticated/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -242,6 +254,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRoadmapRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -254,6 +273,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProgressRoute: typeof AuthenticatedProgressRoute
   AuthenticatedQuestionBankRoute: typeof AuthenticatedQuestionBankRoute
   AuthenticatedRoadmapRoute: typeof AuthenticatedRoadmapRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -265,6 +285,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProgressRoute: AuthenticatedProgressRoute,
   AuthenticatedQuestionBankRoute: AuthenticatedQuestionBankRoute,
   AuthenticatedRoadmapRoute: AuthenticatedRoadmapRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
