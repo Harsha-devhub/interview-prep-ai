@@ -4,7 +4,7 @@ import {
   Dumbbell,
   Mic,
   ClipboardCheck,
-  Map,
+  Map as MapIcon,
   Flame,
   Target,
   TrendingUp,
@@ -107,7 +107,7 @@ function DashboardPage() {
     { title: "Practice questions", desc: "Technical & HR, graded instantly", to: "/practice", icon: Dumbbell },
     { title: "Mock interview", desc: "Full AI-led interview round", to: "/mock-interview", icon: Mic },
     { title: "Take assessment", desc: "Timed MCQ test by topic", to: "/assessments", icon: ClipboardCheck },
-    { title: "View roadmap", desc: "Your personalised 4-week plan", to: "/roadmap", icon: Map },
+    { title: "View roadmap", desc: "Your personalised 4-week plan", to: "/roadmap", icon: MapIcon },
   ] as const;
 
   return (
