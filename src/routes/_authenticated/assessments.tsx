@@ -29,7 +29,7 @@ type Mcq = {
   question: string;
   options: string[] | null;
   correct_option: number | null;
-  explanation: string | null;
+  model_answer: string | null;
 };
 
 function AssessmentsPage() {
@@ -218,8 +218,8 @@ function AssessmentsPage() {
                 );
               })}
             </RadioGroup>
-            {submitted && q.explanation && (
-              <p className="rounded-xl bg-muted/60 p-3 text-sm text-muted-foreground">{q.explanation}</p>
+            {submitted && q.model_answer && (
+              <p className="rounded-xl bg-muted/60 p-3 text-sm text-muted-foreground">{q.model_answer}</p>
             )}
           </CardContent>
         </Card>
