@@ -21,9 +21,9 @@ export function TopBar({
   fullName,
   targetRole,
 }: {
-  email?: string;
-  fullName?: string | null;
-  targetRole?: string | null;
+  email?: string | undefined;
+  fullName?: string | null | undefined;
+  targetRole?: string | null | undefined;
 }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
