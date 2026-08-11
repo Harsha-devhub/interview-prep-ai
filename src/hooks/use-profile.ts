@@ -9,6 +9,10 @@ export type Profile = {
   target_role: string | null;
   experience_level: string;
   skills: string[];
+  college: string | null;
+  graduation_year: number | null;
+  prep_duration_days: number | null;
+  onboarding_completed: boolean;
 };
 
 export function useProfile() {

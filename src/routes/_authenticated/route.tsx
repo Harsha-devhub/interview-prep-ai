@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -15,10 +15,18 @@ function AuthenticatedLayout() {
   const { session, loading } = useSession();
   const navigate = useNavigate();
   const { data: profile } = useProfile();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/auth", replace: true });
   }, [loading, session, navigate]);
+
+  useEffect(() => {
+    if (!session || !profile) return;
+    if (!profile.onboarding_completed && pathname !== "/onboarding") {
+      navigate({ to: "/onboarding", replace: true });
+    }
+  }, [session, profile, pathname, navigate]);
 
   if (loading || !session) {
     return (
@@ -27,6 +35,7 @@ function AuthenticatedLayout() {
       </div>
     );
   }
+
 
   return (
     <SidebarProvider>

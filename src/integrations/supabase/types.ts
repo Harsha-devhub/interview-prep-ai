@@ -136,10 +136,14 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          college: string | null
           created_at: string
           experience_level: string
           full_name: string | null
+          graduation_year: number | null
           id: string
+          onboarding_completed: boolean
+          prep_duration_days: number | null
           skills: string[]
           target_role: string | null
           updated_at: string
@@ -147,10 +151,14 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          college?: string | null
           created_at?: string
           experience_level?: string
           full_name?: string | null
+          graduation_year?: number | null
           id?: string
+          onboarding_completed?: boolean
+          prep_duration_days?: number | null
           skills?: string[]
           target_role?: string | null
           updated_at?: string
@@ -158,10 +166,14 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          college?: string | null
           created_at?: string
           experience_level?: string
           full_name?: string | null
+          graduation_year?: number | null
           id?: string
+          onboarding_completed?: boolean
+          prep_duration_days?: number | null
           skills?: string[]
           target_role?: string | null
           updated_at?: string
