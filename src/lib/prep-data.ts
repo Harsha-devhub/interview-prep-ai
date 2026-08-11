@@ -1,40 +1,46 @@
 export const TARGET_ROLES = [
-  "Software Engineer",
+  "Software Developer",
+  "Java Developer",
+  "Python Developer",
+  "Full Stack Developer",
   "Frontend Developer",
   "Backend Developer",
-  "Full Stack Developer",
   "Data Analyst",
   "Data Scientist",
-  "DevOps Engineer",
+  "Machine Learning Engineer",
   "QA Engineer",
-  "Product Analyst",
+  "DevOps Engineer",
 ];
 
 export const SKILLS = [
   "Java",
   "Python",
+  "C",
   "C++",
   "JavaScript",
-  "TypeScript",
   "React",
   "Node.js",
   "SQL",
+  "MongoDB",
   "Data Structures",
   "Algorithms",
   "DBMS",
   "Operating Systems",
-  "Networking",
-  "OOP",
-  "System Design",
-  "Git",
-  "Cloud",
+  "Computer Networks",
   "Machine Learning",
 ];
 
 export const EXPERIENCE_LEVELS = [
-  { value: "student", label: "College student" },
-  { value: "fresher", label: "Fresh graduate" },
-  { value: "junior", label: "0-2 years experience" },
+  { value: "beginner", label: "Beginner" },
+  { value: "intermediate", label: "Intermediate" },
+  { value: "advanced", label: "Advanced" },
+];
+
+export const PREP_DURATIONS = [
+  { value: 7, label: "7 days", desc: "Interview next week" },
+  { value: 30, label: "30 days", desc: "A focused month" },
+  { value: 60, label: "60 days", desc: "Steady, thorough prep" },
+  { value: 90, label: "90 days", desc: "Full placement season" },
 ];
 
 export function scoreTone(score: number) {
