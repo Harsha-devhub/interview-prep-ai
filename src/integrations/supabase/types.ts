@@ -191,6 +191,7 @@ export type Database = {
           model_answer: string | null
           options: Json | null
           question: string
+          question_type: string
           role: string | null
           topic: string
         }
@@ -203,6 +204,7 @@ export type Database = {
           model_answer?: string | null
           options?: Json | null
           question: string
+          question_type?: string
           role?: string | null
           topic: string
         }
@@ -215,6 +217,7 @@ export type Database = {
           model_answer?: string | null
           options?: Json | null
           question?: string
+          question_type?: string
           role?: string | null
           topic?: string
         }
