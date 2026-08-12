@@ -7,19 +7,12 @@ import {
   Map as MapIcon,
   Flame,
   Target,
-  TrendingUp,
   ArrowUpRight,
+  CheckCircle2,
+  Circle,
+  AlertTriangle,
 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-} from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -30,9 +23,9 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — InterviewPrep AI" },
-      { name: "description", content: "Track your interview readiness, streaks and weak topics at a glance." },
+      { name: "description", content: "Track your preparation score, daily goals, streak and weak areas at a glance." },
       { property: "og:title", content: "Dashboard — InterviewPrep AI" },
-      { property: "og:description", content: "Track your interview readiness, streaks and weak topics." },
+      { property: "og:description", content: "Preparation score, daily goals, streak and weak areas." },
     ],
   }),
   component: DashboardPage,
@@ -56,6 +49,34 @@ function useStats() {
   });
 }
 
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function avg(values: number[]) {
+  if (!values.length) return 0;
+  return Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+}
+
+function streakDays(dates: Date[]) {
+  const set = new Set(dates.map((d) => d.toDateString()));
+  let streak = 0;
+  const cursor = new Date();
+  if (!set.has(cursor.toDateString())) cursor.setDate(cursor.getDate() - 1);
+  while (set.has(cursor.toDateString())) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
+function isToday(iso: string) {
+  return new Date(iso).toDateString() === new Date().toDateString();
+}
+
 function DashboardPage() {
   const { data: profile } = useProfile();
   const { data } = useStats();
@@ -64,24 +85,37 @@ function DashboardPage() {
   const assessments = data?.assessments ?? [];
   const interviews = (data?.interviews ?? []).filter((i) => i.status === "completed");
 
-  const avgPractice = attempts.length
-    ? Math.round(attempts.reduce((a, b) => a + (b.score ?? 0), 0) / attempts.length)
-    : 0;
-  const avgAssessment = assessments.length
-    ? Math.round(assessments.reduce((a, b) => a + b.score, 0) / assessments.length)
-    : 0;
-  const readiness = Math.round(
-    (avgPractice * 0.4 + avgAssessment * 0.3 + (interviews.length ? (interviews[0]?.overall_score ?? 0) : 0) * 0.3) || 0,
-  );
+  const technicalScores = attempts.filter((a) => a.category !== "hr").map((a) => a.score ?? 0);
+  const hrScores = attempts.filter((a) => a.category === "hr").map((a) => a.score ?? 0);
+  const assessmentScores = assessments.map((a) => a.score);
+  const interviewScores = interviews.map((i) => i.overall_score ?? 0);
 
-  const days = new Set(
-    [...attempts, ...assessments].map((r) => new Date(r.created_at).toDateString()),
-  );
+  const breakdown = [
+    { label: "Technical Skills", value: avg(technicalScores) },
+    { label: "Problem Solving", value: avg([...assessmentScores, ...technicalScores]) },
+    { label: "Communication", value: avg(interviewScores) },
+    { label: "HR Readiness", value: avg([...hrScores, ...interviewScores]) },
+    {
+      label: "Interview Confidence",
+      value: Math.min(100, interviews.length * 20 + Math.round(avg(interviewScores) * 0.5)),
+    },
+  ];
+  const prepScore = avg(breakdown.map((b) => b.value));
 
-  const trend = [...attempts]
-    .slice(0, 10)
-    .reverse()
-    .map((a, i) => ({ name: `#${i + 1}`, score: a.score ?? 0 }));
+  const activityDates = [...attempts, ...assessments, ...interviews].map((r) => new Date(r.created_at));
+  const streak = streakDays(activityDates);
+
+  const todayAttempts = attempts.filter((a) => isToday(a.created_at));
+  const todayTechnical = todayAttempts.filter((a) => a.category !== "hr").length;
+  const todayHr = todayAttempts.filter((a) => a.category === "hr").length;
+  const todayAssessments = assessments.filter((a) => isToday(a.created_at)).length;
+
+  const focusTopic = profile?.skills?.[0] ?? "technical";
+  const goals = [
+    { label: `Complete 10 ${focusTopic} questions`, done: todayTechnical, target: 10, to: "/practice" as const },
+    { label: "Take 1 assessment", done: todayAssessments, target: 1, to: "/assessments" as const },
+    { label: "Complete 1 HR practice session", done: todayHr, target: 1, to: "/practice" as const },
+  ];
 
   const topicScores = new Map<string, { total: number; count: number }>();
   for (const a of attempts) {
@@ -96,18 +130,44 @@ function DashboardPage() {
     .sort((a, b) => a.score - b.score)
     .slice(0, 4);
 
+  const recent = [
+    ...interviews.map((i) => ({
+      kind: "Mock interview",
+      title: `${i.role} — ${i.interview_type}`,
+      score: i.overall_score,
+      at: i.created_at,
+      icon: Mic,
+    })),
+    ...assessments.map((a) => ({
+      kind: "Assessment",
+      title: `${a.topic} · ${a.correct_answers}/${a.total_questions} correct`,
+      score: a.score,
+      at: a.created_at,
+      icon: ClipboardCheck,
+    })),
+    ...attempts.map((a) => ({
+      kind: "Question answered",
+      title: a.question_text,
+      score: a.score,
+      at: a.created_at,
+      icon: Dumbbell,
+    })),
+  ]
+    .sort((a, b) => +new Date(b.at) - +new Date(a.at))
+    .slice(0, 6);
+
   const stats = [
-    { label: "Readiness score", value: `${readiness}%`, icon: Target },
-    { label: "Questions practised", value: attempts.length, icon: Dumbbell },
-    { label: "Assessments taken", value: assessments.length, icon: ClipboardCheck },
-    { label: "Active days", value: days.size, icon: Flame },
+    { label: "Preparation score", value: `${prepScore}/100`, icon: Target },
+    { label: "Questions answered", value: attempts.length, icon: Dumbbell },
+    { label: "Assessments completed", value: assessments.length, icon: ClipboardCheck },
+    { label: "Mock interviews", value: interviews.length, icon: Mic },
   ];
 
   const actions = [
     { title: "Practice questions", desc: "Technical & HR, graded instantly", to: "/practice", icon: Dumbbell },
     { title: "Mock interview", desc: "Full AI-led interview round", to: "/mock-interview", icon: Mic },
     { title: "Take assessment", desc: "Timed MCQ test by topic", to: "/assessments", icon: ClipboardCheck },
-    { title: "View roadmap", desc: "Your personalised 4-week plan", to: "/roadmap", icon: MapIcon },
+    { title: "View roadmap", desc: "Your personalised plan", to: "/roadmap", icon: MapIcon },
   ] as const;
 
   return (
@@ -119,13 +179,14 @@ function DashboardPage() {
               {profile?.target_role ? `Preparing for ${profile.target_role}` : "Set your target role"}
             </Badge>
             <h1 className="text-2xl font-bold text-primary-foreground sm:text-3xl">
-              Welcome back{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}.
+              {greeting()}{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""} 👋
             </h1>
             <p className="mt-2 max-w-xl text-sm text-primary-foreground/70">
-              {attempts.length
-                ? "Keep the momentum going — your weakest topics are listed below."
-                : "Start with a few practice questions so the AI can map your strengths."}
+              Let&apos;s continue your interview preparation.
             </p>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-1.5 text-sm font-medium text-primary-foreground">
+              🔥 {streak} Day Preparation Streak
+            </div>
             <div className="mt-5 flex flex-wrap gap-2">
               <Button asChild variant="secondary">
                 <Link to="/practice">Continue practice</Link>
@@ -136,9 +197,9 @@ function DashboardPage() {
             </div>
           </div>
           <div className="w-full max-w-[220px] rounded-2xl bg-primary-foreground/10 p-5 backdrop-blur">
-            <p className="text-xs uppercase tracking-wide text-primary-foreground/60">Interview readiness</p>
-            <p className="mt-1 text-4xl font-bold text-primary-foreground">{readiness}%</p>
-            <Progress value={readiness} className="mt-3 h-2 bg-primary-foreground/20" />
+            <p className="text-xs uppercase tracking-wide text-primary-foreground/60">Preparation score</p>
+            <p className="mt-1 text-4xl font-bold text-primary-foreground">{prepScore}<span className="text-lg text-primary-foreground/60">/100</span></p>
+            <Progress value={prepScore} className="mt-3 h-2 bg-primary-foreground/20" />
           </div>
         </div>
       </section>
@@ -161,38 +222,84 @@ function DashboardPage() {
 
       <section className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-base">Recent practice scores</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <CardHeader>
+            <CardTitle className="text-base">Preparation score breakdown</CardTitle>
+            <CardDescription>How your {prepScore}/100 is made up</CardDescription>
           </CardHeader>
-          <CardContent className="h-[240px]">
-            {trend.length ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={trend}>
-                  <defs>
-                    <linearGradient id="scoreFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--color-accent)" stopOpacity={0.35} />
-                      <stop offset="100%" stopColor="var(--color-accent)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                  <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} />
-                  <YAxis domain={[0, 100]} tickLine={false} axisLine={false} fontSize={12} width={30} />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="score" stroke="var(--color-accent)" strokeWidth={2} fill="url(#scoreFill)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="grid h-full place-items-center text-sm text-muted-foreground">
-                Answer a few practice questions to see your trend.
+          <CardContent className="space-y-4">
+            {breakdown.map((b) => (
+              <div key={b.label}>
+                <div className="flex items-center justify-between text-sm">
+                  <span>{b.label}</span>
+                  <span className="text-muted-foreground">{b.value}%</span>
+                </div>
+                <Progress value={b.value} className="mt-1.5 h-1.5" />
               </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Today&apos;s goals</CardTitle>
+            <CardDescription>Reset every day at midnight</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {goals.map((g) => {
+              const done = g.done >= g.target;
+              return (
+                <Link key={g.label} to={g.to} className="flex items-start gap-3 rounded-xl p-2 -mx-2 transition-colors hover:bg-muted/60">
+                  {done ? (
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+                  ) : (
+                    <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                  )}
+                  <div className="min-w-0">
+                    <p className={`text-sm ${done ? "text-muted-foreground line-through" : ""}`}>{g.label}</p>
+                    <p className="text-xs text-muted-foreground">{Math.min(g.done, g.target)} / {g.target} done</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-base">Recent activity</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {recent.length ? (
+              recent.map((r, i) => (
+                <div key={i} className="flex items-start gap-3 border-b pb-3 last:border-0 last:pb-0">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/5">
+                    <r.icon className="h-4 w-4 text-primary" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-muted-foreground">{r.kind}</p>
+                    <p className="truncate text-sm">{r.title}</p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-sm font-semibold">{r.score ?? "—"}%</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(r.at).toLocaleDateString(undefined, { day: "numeric", month: "short" })}
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">Nothing yet — answer a few questions to build your history.</p>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Weak topics</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <AlertTriangle className="h-4 w-4 text-warning" /> Weak areas
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {weakTopics.length ? (
