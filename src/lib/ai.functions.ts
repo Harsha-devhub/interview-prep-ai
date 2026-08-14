@@ -46,6 +46,8 @@ export const nextInterviewQuestion = createServerFn({ method: "POST" })
       .object({
         role: z.string().min(1),
         interviewType: z.string().default("mixed"),
+        difficulty: z.string().default("intermediate"),
+        totalQuestions: z.number().min(3).max(20).default(6),
         transcript: z
           .array(z.object({ role: z.enum(["interviewer", "candidate"]), content: z.string() }))
           .default([]),
@@ -57,7 +59,7 @@ export const nextInterviewQuestion = createServerFn({ method: "POST" })
     return callAIJson<{ question: string; done: boolean }>([
       {
         role: "system",
-        content: `You are conducting a ${data.interviewType} mock interview for a ${data.role} role with a fresh graduate. Ask ONE question at a time, building naturally on previous answers. Ask a maximum of 6 questions in total. Respond ONLY with JSON: {"question": string, "done": boolean}. Set done=true and leave question empty once 6 questions have been asked.`,
+        content: `You are conducting a ${data.interviewType} mock interview for a ${data.role} role at ${data.difficulty} difficulty with a fresh graduate. Ask ONE question at a time. Analyse the candidate's previous answer silently and ask a relevant follow-up that builds on it; move to a new area when a thread is exhausted. Never reveal scores, evaluation or feedback during the interview. Ask a maximum of ${data.totalQuestions} questions in total. Respond ONLY with JSON: {"question": string, "done": boolean}. Set done=true and leave question empty once ${data.totalQuestions} questions have been asked.`,
       },
       {
         role: "user",
