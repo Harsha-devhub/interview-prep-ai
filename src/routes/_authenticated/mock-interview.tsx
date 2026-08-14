@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Loader2, Mic, Send, Bot, User } from "lucide-react";
+import { Loader2, Mic, Send, Bot, User, SkipForward, Clock, Square } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,7 +12,6 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
-import { TARGET_ROLES } from "@/lib/prep-data";
 import {
   nextInterviewQuestion,
   gradeInterview,
@@ -23,14 +22,53 @@ import {
 export const Route = createFileRoute("/_authenticated/mock-interview")({
   head: () => ({
     meta: [
-      { title: "Mock Interview — InterviewPrep AI" },
-      { name: "description", content: "Sit a full AI-led mock interview and get a scored panel report." },
-      { property: "og:title", content: "Mock Interview — InterviewPrep AI" },
-      { property: "og:description", content: "Sit a full AI-led mock interview and get a scored report." },
+      { title: "AI Mock Interview — InterviewPrep AI" },
+      {
+        name: "description",
+        content: "Sit a realistic AI-led mock interview with adaptive follow-ups and a full panel report at the end.",
+      },
+      { property: "og:title", content: "AI Mock Interview — InterviewPrep AI" },
+      { property: "og:description", content: "Adaptive AI mock interviews with a scored panel report." },
     ],
   }),
   component: MockInterviewPage,
 });
+
+const INTERVIEW_TYPES = [
+  { value: "technical", label: "Technical Interview" },
+  { value: "hr", label: "HR Interview" },
+  { value: "behavioral", label: "Behavioral Interview" },
+  { value: "mixed", label: "Mixed Interview" },
+];
+
+const INTERVIEW_ROLES = [
+  "Java Developer",
+  "Full Stack Developer",
+  "Python Developer",
+  "Data Analyst",
+  "Data Scientist",
+  "ML Engineer",
+  "Frontend Developer",
+  "Backend Developer",
+];
+
+const DIFFICULTIES = [
+  { value: "beginner", label: "Beginner" },
+  { value: "intermediate", label: "Intermediate" },
+  { value: "advanced", label: "Advanced" },
+];
+
+const DURATIONS = [
+  { value: 10, label: "10 minutes", questions: 5 },
+  { value: 20, label: "20 minutes", questions: 8 },
+  { value: 30, label: "30 minutes", questions: 10 },
+];
+
+function formatClock(seconds: number) {
+  const m = Math.floor(Math.max(seconds, 0) / 60);
+  const s = Math.max(seconds, 0) % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 function MockInterviewPage() {
   const { data: profile } = useProfile();
@@ -40,22 +78,66 @@ function MockInterviewPage() {
 
   const [role, setRole] = useState<string>("");
   const [type, setType] = useState("mixed");
+  const [difficulty, setDifficulty] = useState("intermediate");
+  const [duration, setDuration] = useState(20);
+
   const [transcript, setTranscript] = useState<InterviewTurn[]>([]);
   const [reply, setReply] = useState("");
   const [busy, setBusy] = useState(false);
   const [started, setStarted] = useState(false);
   const [report, setReport] = useState<InterviewReport | null>(null);
+  const [remaining, setRemaining] = useState(duration * 60);
 
-  const activeRole = role || profile?.target_role || "Software Engineer";
+  const endedRef = useRef(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const activeRole = role || (INTERVIEW_ROLES.includes(profile?.target_role ?? "") ? profile!.target_role! : "");
+  const totalQuestions = useMemo(
+    () => DURATIONS.find((d) => d.value === duration)?.questions ?? 8,
+    [duration],
+  );
   const asked = transcript.filter((t) => t.role === "interviewer").length;
 
+  useEffect(() => {
+    if (!started || report) return;
+    const id = setInterval(() => {
+      setRemaining((r) => {
+        if (r <= 1) {
+          clearInterval(id);
+          if (!endedRef.current) {
+            endedRef.current = true;
+            void finish(transcriptRef.current);
+          }
+          return 0;
+        }
+        return r - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [started, report]);
+
+  const transcriptRef = useRef<InterviewTurn[]>([]);
+  useEffect(() => {
+    transcriptRef.current = transcript;
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [transcript]);
+
   async function start() {
+    if (!activeRole) {
+      toast.error("Pick the role you want to be interviewed for.");
+      return;
+    }
     setBusy(true);
     try {
-      const res = await askNext({ data: { role: activeRole, interviewType: type, transcript: [] } });
+      const res = await askNext({
+        data: { role: activeRole, interviewType: type, difficulty, totalQuestions, transcript: [] },
+      });
       setTranscript([{ role: "interviewer", content: res.question }]);
       setStarted(true);
       setReport(null);
+      setRemaining(duration * 60);
+      endedRef.current = false;
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not start the interview.");
     } finally {
@@ -63,18 +145,16 @@ function MockInterviewPage() {
     }
   }
 
-  async function send() {
-    if (reply.trim().length < 5) {
-      toast.error("Give a fuller answer before continuing.");
-      return;
-    }
-    const updated: InterviewTurn[] = [...transcript, { role: "candidate", content: reply }];
+  async function advance(updated: InterviewTurn[]) {
     setTranscript(updated);
-    setReply("");
     setBusy(true);
     try {
-      const res = await askNext({ data: { role: activeRole, interviewType: type, transcript: updated } });
-      if (res.done || !res.question) {
+      const res = await askNext({
+        data: { role: activeRole, interviewType: type, difficulty, totalQuestions, transcript: updated },
+      });
+      const answered = updated.filter((t) => t.role === "candidate").length;
+      if (res.done || !res.question || answered >= totalQuestions) {
+        endedRef.current = true;
         await finish(updated);
       } else {
         setTranscript([...updated, { role: "interviewer", content: res.question }]);
@@ -86,7 +166,27 @@ function MockInterviewPage() {
     }
   }
 
+  async function send() {
+    if (reply.trim().length < 5) {
+      toast.error("Give a fuller answer before continuing.");
+      return;
+    }
+    const updated: InterviewTurn[] = [...transcript, { role: "candidate", content: reply }];
+    setReply("");
+    await advance(updated);
+  }
+
+  async function skip() {
+    const updated: InterviewTurn[] = [
+      ...transcript,
+      { role: "candidate", content: "(skipped this question)" },
+    ];
+    setReply("");
+    await advance(updated);
+  }
+
   async function finish(final: InterviewTurn[]) {
+    endedRef.current = true;
     setBusy(true);
     try {
       const result = await grade({ data: { role: activeRole, transcript: final } });
@@ -113,9 +213,9 @@ function MockInterviewPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Mock Interview</h1>
+        <h1 className="text-2xl font-bold">AI Mock Interview</h1>
         <p className="text-sm text-muted-foreground">
-          A six-question AI-led round that adapts to your answers, followed by a panel-style report.
+          A realistic AI-led round with adaptive follow-ups. Your evaluation arrives at the end, not after each answer.
         </p>
       </div>
 
@@ -127,13 +227,28 @@ function MockInterviewPage() {
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <p className="text-sm font-medium">Target role</p>
-                <Select value={activeRole} onValueChange={setRole}>
+                <p className="text-sm font-medium">Interview type</p>
+                <Select value={type} onValueChange={setType}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {TARGET_ROLES.map((r) => (
+                    {INTERVIEW_TYPES.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-sm font-medium">Role</p>
+                <Select value={activeRole} onValueChange={setRole}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INTERVIEW_ROLES.map((r) => (
                       <SelectItem key={r} value={r}>
                         {r}
                       </SelectItem>
@@ -142,15 +257,32 @@ function MockInterviewPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <p className="text-sm font-medium">Interview type</p>
-                <Select value={type} onValueChange={setType}>
+                <p className="text-sm font-medium">Difficulty</p>
+                <Select value={difficulty} onValueChange={setDifficulty}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="technical">Technical</SelectItem>
-                    <SelectItem value="hr">HR / Behavioural</SelectItem>
-                    <SelectItem value="mixed">Mixed panel</SelectItem>
+                    {DIFFICULTIES.map((d) => (
+                      <SelectItem key={d.value} value={d.value}>
+                        {d.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-sm font-medium">Interview duration</p>
+                <Select value={String(duration)} onValueChange={(v) => setDuration(Number(v))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DURATIONS.map((d) => (
+                      <SelectItem key={d.value} value={String(d.value)}>
+                        {d.label} · {d.questions} questions
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -164,12 +296,32 @@ function MockInterviewPage() {
       ) : (
         <>
           <Card>
-            <CardHeader className="flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base">{activeRole} · {type}</CardTitle>
-              <Badge variant="secondary">Question {Math.min(asked, 6)} of 6</Badge>
+            <CardHeader className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground">
+                    <Bot className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <CardTitle className="text-base">AI Interviewer</CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      {activeRole} · {INTERVIEW_TYPES.find((t) => t.value === type)?.label} · {difficulty}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="gap-1">
+                    <Clock className="h-3 w-3" /> {formatClock(remaining)}
+                  </Badge>
+                  <Badge variant="secondary">
+                    Question {Math.min(asked, totalQuestions)} of {totalQuestions}
+                  </Badge>
+                </div>
+              </div>
+              <Progress value={(Math.min(asked, totalQuestions) / totalQuestions) * 100} className="h-1.5" />
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-4">
+              <div ref={scrollRef} className="max-h-[420px] space-y-4 overflow-y-auto pr-1">
                 {transcript.map((turn, i) => (
                   <div key={i} className="flex gap-3">
                     <span
@@ -179,18 +331,23 @@ function MockInterviewPage() {
                     >
                       {turn.role === "interviewer" ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
                     </span>
-                    <div
-                      className={`min-w-0 flex-1 rounded-2xl px-4 py-3 text-sm ${
-                        turn.role === "interviewer" ? "bg-secondary" : "bg-accent/10"
-                      }`}
-                    >
-                      {turn.content}
+                    <div className="min-w-0 flex-1">
+                      <p className="mb-1 text-xs font-medium text-muted-foreground">
+                        {turn.role === "interviewer" ? "AI Interviewer" : "Candidate"}
+                      </p>
+                      <div
+                        className={`rounded-2xl px-4 py-3 text-sm ${
+                          turn.role === "interviewer" ? "bg-secondary" : "bg-accent/10"
+                        }`}
+                      >
+                        {turn.content}
+                      </div>
                     </div>
                   </div>
                 ))}
-                {busy && (
+                {busy && !report && (
                   <p className="flex items-center gap-2 pl-11 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Thinking...
+                    <Loader2 className="h-4 w-4 animate-spin" /> The interviewer is thinking...
                   </p>
                 )}
               </div>
@@ -199,17 +356,20 @@ function MockInterviewPage() {
                 <div className="space-y-2 border-t border-border pt-4">
                   <Textarea
                     rows={4}
-                    placeholder="Your answer..."
+                    placeholder="Type your answer..."
                     value={reply}
                     onChange={(e) => setReply(e.target.value)}
                     disabled={busy}
                   />
                   <div className="flex flex-wrap gap-2">
                     <Button onClick={send} disabled={busy}>
-                      <Send className="mr-2 h-4 w-4" /> Send answer
+                      <Send className="mr-2 h-4 w-4" /> Submit answer
+                    </Button>
+                    <Button variant="secondary" onClick={skip} disabled={busy}>
+                      <SkipForward className="mr-2 h-4 w-4" /> Skip question
                     </Button>
                     <Button variant="outline" onClick={() => finish(transcript)} disabled={busy}>
-                      End & get report
+                      <Square className="mr-2 h-4 w-4" /> End interview
                     </Button>
                   </div>
                 </div>
@@ -258,6 +418,7 @@ function MockInterviewPage() {
                     setStarted(false);
                     setTranscript([]);
                     setReport(null);
+                    endedRef.current = false;
                   }}
                 >
                   Run another interview

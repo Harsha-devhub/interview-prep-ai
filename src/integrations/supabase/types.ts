@@ -184,9 +184,11 @@ export type Database = {
       questions: {
         Row: {
           category: string
+          companies: string[]
           correct_option: number | null
           created_at: string
           difficulty: string
+          frequently_asked: boolean
           id: string
           model_answer: string | null
           options: Json | null
@@ -197,9 +199,11 @@ export type Database = {
         }
         Insert: {
           category: string
+          companies?: string[]
           correct_option?: number | null
           created_at?: string
           difficulty?: string
+          frequently_asked?: boolean
           id?: string
           model_answer?: string | null
           options?: Json | null
@@ -210,9 +214,11 @@ export type Database = {
         }
         Update: {
           category?: string
+          companies?: string[]
           correct_option?: number | null
           created_at?: string
           difficulty?: string
+          frequently_asked?: boolean
           id?: string
           model_answer?: string | null
           options?: Json | null
@@ -222,6 +228,44 @@ export type Database = {
           topic?: string
         }
         Relationships: []
+      }
+      user_questions: {
+        Row: {
+          bookmarked: boolean
+          completed: boolean
+          created_at: string
+          id: string
+          question_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bookmarked?: boolean
+          completed?: boolean
+          created_at?: string
+          id?: string
+          question_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bookmarked?: boolean
+          completed?: boolean
+          created_at?: string
+          id?: string
+          question_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_questions_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
