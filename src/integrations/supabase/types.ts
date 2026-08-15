@@ -229,6 +229,39 @@ export type Database = {
         }
         Relationships: []
       }
+      roadmaps: {
+        Row: {
+          completed_tasks: string[]
+          created_at: string
+          duration_days: number
+          id: string
+          plan: Json
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_tasks?: string[]
+          created_at?: string
+          duration_days?: number
+          id?: string
+          plan: Json
+          role: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_tasks?: string[]
+          created_at?: string
+          duration_days?: number
+          id?: string
+          plan?: Json
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_questions: {
         Row: {
           bookmarked: boolean
