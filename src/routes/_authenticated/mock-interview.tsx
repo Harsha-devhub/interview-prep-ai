@@ -378,54 +378,117 @@ function MockInterviewPage() {
           </Card>
 
           {report && (
-            <Card className="border-accent/30">
-              <CardHeader>
-                <div className="flex items-center justify-between gap-4">
-                  <CardTitle className="text-base">Panel report</CardTitle>
-                  <span className="text-2xl font-bold text-accent">{Math.round(report.overall_score)}%</span>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-5 text-sm">
-                <p>{report.summary}</p>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {report.areas?.map((a) => (
-                    <div key={a.name}>
-                      <div className="flex justify-between text-sm">
-                        <span>{a.name}</span>
-                        <span className="text-muted-foreground">{a.score}%</span>
+            <>
+              <Card className="border-accent/30">
+                <CardHeader>
+                  <div className="flex items-center justify-between gap-4">
+                    <CardTitle className="text-base">Interview evaluation</CardTitle>
+                    <span className="text-3xl font-bold text-accent">
+                      {Math.round(report.overall_score)}
+                      <span className="text-base text-muted-foreground">/100</span>
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-5 text-sm">
+                  <p>{report.summary}</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {report.areas?.map((a) => (
+                      <div key={a.name}>
+                        <div className="flex justify-between text-sm">
+                          <span>{a.name}</span>
+                          <span className="text-muted-foreground">{a.score}</span>
+                        </div>
+                        <Progress value={a.score} className="mt-1.5 h-1.5" />
                       </div>
-                      <Progress value={a.score} className="mt-1.5 h-1.5" />
+                    ))}
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-xl bg-success/5 p-3">
+                      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-success">
+                        What you did well
+                      </p>
+                      <ul className="space-y-1 text-muted-foreground">
+                        {report.strengths?.map((s, i) => <li key={i}>• {s}</li>)}
+                      </ul>
                     </div>
-                  ))}
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-success">Strengths</p>
-                    <ul className="space-y-1 text-muted-foreground">
-                      {report.strengths?.map((s, i) => <li key={i}>• {s}</li>)}
-                    </ul>
+                    <div className="rounded-xl bg-warning/5 p-3">
+                      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-warning">
+                        What you should improve
+                      </p>
+                      <ul className="space-y-1 text-muted-foreground">
+                        {report.improvements?.map((s, i) => <li key={i}>• {s}</li>)}
+                      </ul>
+                    </div>
                   </div>
-                  <div>
-                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-warning">Improve</p>
-                    <ul className="space-y-1 text-muted-foreground">
-                      {report.improvements?.map((s, i) => <li key={i}>• {s}</li>)}
-                    </ul>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setStarted(false);
-                    setTranscript([]);
-                    setReport(null);
-                    endedRef.current = false;
-                  }}
-                >
-                  Run another interview
-                </Button>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              {report.answer_analysis?.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Answer analysis</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 text-sm">
+                    {report.answer_analysis.map((a, i) => (
+                      <div key={i} className="rounded-2xl border border-border p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="font-medium">
+                            Q{i + 1}. {a.question}
+                          </p>
+                          <Badge variant="secondary" className="shrink-0">
+                            {Math.round(a.score)}/100
+                          </Badge>
+                        </div>
+                        <p className="mt-2 rounded-xl bg-muted/60 p-3 text-muted-foreground">{a.answer}</p>
+                        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-success">Strengths</p>
+                            <ul className="mt-1 space-y-1 text-muted-foreground">
+                              {a.strengths?.map((s, j) => <li key={j}>• {s}</li>)}
+                            </ul>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-warning">
+                              Areas for improvement
+                            </p>
+                            <ul className="mt-1 space-y-1 text-muted-foreground">
+                              {a.improvements?.map((s, j) => <li key={j}>• {s}</li>)}
+                            </ul>
+                          </div>
+                        </div>
+                        <div className="mt-3 rounded-xl bg-accent/5 p-3">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-accent">Ideal answer</p>
+                          <p className="mt-1 text-muted-foreground">{a.ideal_answer}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              <Card className="gradient-brand border-0">
+                <CardContent className="p-5">
+                  <p className="text-xs uppercase tracking-wide text-primary-foreground/60">
+                    Final recommendation
+                  </p>
+                  <p className="mt-1 text-primary-foreground">{report.recommendation}</p>
+                </CardContent>
+              </Card>
+
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setStarted(false);
+                  setTranscript([]);
+                  setReport(null);
+                  endedRef.current = false;
+                }}
+              >
+                Run another interview
+              </Button>
+            </>
           )}
+
         </>
       )}
     </div>
