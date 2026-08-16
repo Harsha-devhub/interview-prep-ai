@@ -27,6 +27,7 @@ import {
 const prepare = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Practice", url: "/practice", icon: Dumbbell },
+  { title: "HR Practice", url: "/hr-practice", icon: MessagesSquare },
   { title: "Mock Interview", url: "/mock-interview", icon: Mic },
   { title: "Assessments", url: "/assessments", icon: ClipboardCheck },
   { title: "Question Bank", url: "/question-bank", icon: Library },
@@ -35,6 +36,7 @@ const prepare = [
 const grow = [
   { title: "Progress", url: "/progress", icon: TrendingUp },
   { title: "Roadmap", url: "/roadmap", icon: Map },
+  { title: "Career Assistant", url: "/career-assistant", icon: Bot },
 ] as const;
 
 const account = [
