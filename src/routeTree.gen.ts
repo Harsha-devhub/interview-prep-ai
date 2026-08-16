@@ -14,7 +14,9 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAssessmentsRouteImport } from './routes/_authenticated/assessments'
+import { Route as AuthenticatedCareerAssistantRouteImport } from './routes/_authenticated/career-assistant'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedHrPracticeRouteImport } from './routes/_authenticated/hr-practice'
 import { Route as AuthenticatedMockInterviewRouteImport } from './routes/_authenticated/mock-interview'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
@@ -49,9 +51,20 @@ const AuthenticatedAssessmentsRoute =
     path: '/assessments',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCareerAssistantRoute =
+  AuthenticatedCareerAssistantRouteImport.update({
+    id: '/career-assistant',
+    path: '/career-assistant',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHrPracticeRoute = AuthenticatedHrPracticeRouteImport.update({
+  id: '/hr-practice',
+  path: '/hr-practice',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMockInterviewRoute =
@@ -102,7 +115,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/assessments': typeof AuthenticatedAssessmentsRoute
+  '/career-assistant': typeof AuthenticatedCareerAssistantRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/hr-practice': typeof AuthenticatedHrPracticeRoute
   '/mock-interview': typeof AuthenticatedMockInterviewRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/practice': typeof AuthenticatedPracticeRoute
@@ -117,7 +132,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/assessments': typeof AuthenticatedAssessmentsRoute
+  '/career-assistant': typeof AuthenticatedCareerAssistantRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/hr-practice': typeof AuthenticatedHrPracticeRoute
   '/mock-interview': typeof AuthenticatedMockInterviewRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/practice': typeof AuthenticatedPracticeRoute
@@ -134,7 +151,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/assessments': typeof AuthenticatedAssessmentsRoute
+  '/_authenticated/career-assistant': typeof AuthenticatedCareerAssistantRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/hr-practice': typeof AuthenticatedHrPracticeRoute
   '/_authenticated/mock-interview': typeof AuthenticatedMockInterviewRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
@@ -151,7 +170,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/assessments'
+    | '/career-assistant'
     | '/dashboard'
+    | '/hr-practice'
     | '/mock-interview'
     | '/onboarding'
     | '/practice'
@@ -166,7 +187,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/assessments'
+    | '/career-assistant'
     | '/dashboard'
+    | '/hr-practice'
     | '/mock-interview'
     | '/onboarding'
     | '/practice'
@@ -182,7 +205,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/assessments'
+    | '/_authenticated/career-assistant'
     | '/_authenticated/dashboard'
+    | '/_authenticated/hr-practice'
     | '/_authenticated/mock-interview'
     | '/_authenticated/onboarding'
     | '/_authenticated/practice'
@@ -237,11 +262,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssessmentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/career-assistant': {
+      id: '/_authenticated/career-assistant'
+      path: '/career-assistant'
+      fullPath: '/career-assistant'
+      preLoaderRoute: typeof AuthenticatedCareerAssistantRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr-practice': {
+      id: '/_authenticated/hr-practice'
+      path: '/hr-practice'
+      fullPath: '/hr-practice'
+      preLoaderRoute: typeof AuthenticatedHrPracticeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/mock-interview': {
@@ -305,7 +344,9 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAssessmentsRoute: typeof AuthenticatedAssessmentsRoute
+  AuthenticatedCareerAssistantRoute: typeof AuthenticatedCareerAssistantRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedHrPracticeRoute: typeof AuthenticatedHrPracticeRoute
   AuthenticatedMockInterviewRoute: typeof AuthenticatedMockInterviewRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
@@ -318,7 +359,9 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAssessmentsRoute: AuthenticatedAssessmentsRoute,
+  AuthenticatedCareerAssistantRoute: AuthenticatedCareerAssistantRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedHrPracticeRoute: AuthenticatedHrPracticeRoute,
   AuthenticatedMockInterviewRoute: AuthenticatedMockInterviewRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
