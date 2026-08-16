@@ -189,3 +189,84 @@ export const generateRoadmap = createServerFn({ method: "POST" })
     ]);
   });
 
+
+export type CareerAnswer = {
+  answer: string;
+  key_points: string[];
+  next_actions: string[];
+};
+
+export const careerAdvice = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ question: z.string().min(1).max(1000) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase;
+    const [profileRes, attemptsRes, assessmentsRes, interviewsRes] = await Promise.all([
+      sb.from("profiles").select("*").eq("user_id", context.userId).maybeSingle(),
+      sb
+        .from("practice_attempts")
+        .select("topic, category, score, created_at")
+        .order("created_at", { ascending: false })
+        .limit(60),
+      sb
+        .from("assessment_results")
+        .select("topic, score, correct_answers, total_questions, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20),
+      sb
+        .from("mock_interviews")
+        .select("role, interview_type, overall_score, created_at")
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ]);
+
+    const profile = profileRes.data;
+    const attempts = attemptsRes.data ?? [];
+    const assessments = assessmentsRes.data ?? [];
+    const interviews = interviewsRes.data ?? [];
+
+    const byTopic = new Map<string, { total: number; count: number }>();
+    for (const a of attempts) {
+      const key = a.topic ?? "General";
+      const e = byTopic.get(key) ?? { total: 0, count: 0 };
+      e.total += a.score ?? 0;
+      e.count += 1;
+      byTopic.set(key, e);
+    }
+    const topicLine =
+      [...byTopic.entries()]
+        .map(([t, v]) => `${t}: ${Math.round(v.total / v.count)}% over ${v.count} answers`)
+        .join("; ") || "no practice answers yet";
+
+    const profileLine = profile
+      ? `Name: ${profile.full_name ?? "unknown"}; Target role: ${profile.target_role ?? "not set"}; Level: ${
+          profile.experience_level
+        }; Skills: ${(profile.skills ?? []).join(", ") || "none listed"}; College: ${
+          profile.college ?? "unknown"
+        }; Graduation year: ${profile.graduation_year ?? "unknown"}; Preparation window: ${
+          profile.prep_duration_days ?? 30
+        } days`
+      : "no profile saved yet";
+
+    return callAIJson<CareerAnswer>([
+      {
+        role: "system",
+        content:
+          'You are the personal AI career coach inside an interview preparation app. You are given the student\'s real profile and performance data. Ground EVERY answer in that data: cite their actual scores, weak topics and target role, and never give generic advice that ignores it. If data is missing, say what they should complete first. Respond ONLY with JSON: {"answer": 2-5 short paragraphs of markdown-free plain text, "key_points": string[] of 3-5 data-grounded observations, "next_actions": string[] of 3-5 concrete next steps with topics and counts}.',
+      },
+      {
+        role: "user",
+        content: `STUDENT PROFILE\n${profileLine}\n\nPRACTICE PERFORMANCE BY TOPIC\n${topicLine}\n\nASSESSMENTS\n${
+          assessments
+            .map((a) => `${a.topic}: ${a.score}% (${a.correct_answers}/${a.total_questions})`)
+            .join("; ") || "none taken"
+        }\n\nMOCK INTERVIEWS\n${
+          interviews
+            .map((i) => `${i.interview_type} for ${i.role}: ${i.overall_score ?? "not graded"}`)
+            .join("; ") || "none completed"
+        }\n\nQUESTION: ${data.question}`,
+      },
+    ]);
+  });
