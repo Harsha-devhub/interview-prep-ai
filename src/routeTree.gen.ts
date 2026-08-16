@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAssessmentsRouteImport } from './routes/_authenticated/assessments'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedHrPracticeRouteImport } from './routes/_authenticated/hr-practice'
 import { Route as AuthenticatedMockInterviewRouteImport } from './routes/_authenticated/mock-interview'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
@@ -52,6 +53,11 @@ const AuthenticatedAssessmentsRoute =
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHrPracticeRoute = AuthenticatedHrPracticeRouteImport.update({
+  id: '/hr-practice',
+  path: '/hr-practice',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMockInterviewRoute =
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/assessments': typeof AuthenticatedAssessmentsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/hr-practice': typeof AuthenticatedHrPracticeRoute
   '/mock-interview': typeof AuthenticatedMockInterviewRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/practice': typeof AuthenticatedPracticeRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/assessments': typeof AuthenticatedAssessmentsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/hr-practice': typeof AuthenticatedHrPracticeRoute
   '/mock-interview': typeof AuthenticatedMockInterviewRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/practice': typeof AuthenticatedPracticeRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/assessments': typeof AuthenticatedAssessmentsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/hr-practice': typeof AuthenticatedHrPracticeRoute
   '/_authenticated/mock-interview': typeof AuthenticatedMockInterviewRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
@@ -152,6 +161,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/assessments'
     | '/dashboard'
+    | '/hr-practice'
     | '/mock-interview'
     | '/onboarding'
     | '/practice'
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/assessments'
     | '/dashboard'
+    | '/hr-practice'
     | '/mock-interview'
     | '/onboarding'
     | '/practice'
@@ -183,6 +194,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/assessments'
     | '/_authenticated/dashboard'
+    | '/_authenticated/hr-practice'
     | '/_authenticated/mock-interview'
     | '/_authenticated/onboarding'
     | '/_authenticated/practice'
@@ -242,6 +254,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hr-practice': {
+      id: '/_authenticated/hr-practice'
+      path: '/hr-practice'
+      fullPath: '/hr-practice'
+      preLoaderRoute: typeof AuthenticatedHrPracticeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/mock-interview': {
@@ -306,6 +325,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAssessmentsRoute: typeof AuthenticatedAssessmentsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedHrPracticeRoute: typeof AuthenticatedHrPracticeRoute
   AuthenticatedMockInterviewRoute: typeof AuthenticatedMockInterviewRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
@@ -319,6 +339,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAssessmentsRoute: AuthenticatedAssessmentsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedHrPracticeRoute: AuthenticatedHrPracticeRoute,
   AuthenticatedMockInterviewRoute: AuthenticatedMockInterviewRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
