@@ -1,110 +1,271 @@
-# Interview Prep Pro
+# 🚀 InterviewPrep AI
 
-Create a modern, responsive full-stack web application called InterviewPrep AI — an AI-powered interview preparation platform designed primarily for college students and fresh graduates preparing for technical and HR interviews.
+> An AI-powered interview preparation platform that helps students and fresh graduates prepare for technical and HR interviews through personalized practice, mock interviews, assessments, and AI-generated feedback.
 
-The application should feel like a polished real-world SaaS product, not a basic student project.
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react)
+![TanStack](https://img.shields.io/badge/TanStack%20Start-FF4154?style=for-the-badge)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![Cloudflare](https://img.shields.io/badge/Cloudflare-FF8800?style=for-the-badge&logo=cloudflare)
+![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
-1. Core Goal
+---
 
-Users should be able to:
+## 📖 Overview
 
-Create an account and log in
+InterviewPrep AI is a modern full-stack web application built to simulate real interview experiences for aspiring software engineers.
 
-Select their target job role
+Instead of simply displaying interview questions, the platform evaluates user responses, tracks learning progress, identifies weak areas, and generates personalized preparation roadmaps using AI.
 
-Select programming/technical skills
+The application is designed to provide a structured, data-driven interview preparation experience similar to professional interview coaching platforms.
 
-Practice technical interview questions
+---
 
-Practice HR questions
+## ✨ Features
 
-Take MCQ-based assessments
+### 🤖 AI Mock Interviews
 
-Participate in AI-powered mock interviews
+- AI-powered interview sessions
+- Adaptive follow-up questions
+- Realistic interview flow
+- Detailed feedback and scoring
 
-Receive AI-generated feedback
+### 💻 Technical Interview Practice
 
-Track their performance over time
+- Data Structures & Algorithms
+- Operating Systems
+- Database Management Systems
+- Computer Networks
+- Object-Oriented Programming
+- Programming Languages
+- Role-specific interview questions
 
-Identify weak topics
+### 👨‍💼 HR Interview Preparation
 
-Get a personalized preparation roadmap
+- Behavioral interview questions
+- Situational interview scenarios
+- STAR method guidance
+- AI-generated evaluation
 
-2. Design & UI
+### 📝 Coding & MCQ Assessments
 
-Use a clean, professional and modern interface.
+- Timed assessments
+- Topic-wise quizzes
+- Instant scoring
+- Detailed explanations
 
-Theme
+### 📈 Progress Analytics
 
-Primary theme: dark navy/blue with white backgrounds where appropriate
+- Preparation score
+- Performance trends
+- Weak topic detection
+- Daily learning goals
+- Interview readiness tracking
 
-Use subtle gradients and glassmorphism sparingly
+### 🎯 Personalized Roadmap
 
-Rounded cards
+- AI-generated study plan
+- Topic prioritization
+- Recommended practice sessions
+- Continuous progress updates
 
-Smooth hover animations
+---
 
-Clear typography
+## 🖥️ Application Modules
 
-Professional dashboard-style layout
+- Dashboard
+- Technical Practice
+- HR Practice
+- Mock Interview
+- Assessments
+- Question Bank
+- Progress Analytics
+- Personalized Roadmap
+- Career Assistant
+- User Profile
+- Settings
 
-Responsive design for desktop, tablet and mobile
+---
 
-Avoid excessive animations or clutter
+## 🛠 Tech Stack
 
-Main navigation
+### Frontend
 
-Create a sidebar/dashboard navigation containing:
+- React
+- TypeScript
+- TanStack Start
+- Tailwind CSS
+- ShadCN UI
 
-Dashboard
+### Backend
 
-Practice
+- TanStack Server Functions
+- Node.js
+- Cloudflare Workers
 
-Mock Interview
+### Database & Authentication
 
-Assessments
+- Supabase
+- PostgreSQL
+- Supabase Authentication
 
-Question Bank
+### AI Integration
 
-Progress
+- Google Gemini
+- Lovable AI Gateway
 
-Roadmap
+### Deployment
 
-Profile
+- Cloudflare
+- Vite
 
-Settings
+---
 
-Add a top navigation bar containing:
+## 🏗 Architecture
 
-Search
+```
+                    +-------------------+
+                    |      React UI     |
+                    +---------+---------+
+                              |
+                              |
+                     TanStack Start
+                              |
+             -----------------------------
+             |                           |
+             |                           |
+      Server Functions             Authentication
+             |                           |
+             |                           |
+       Google Gemini API          Supabase Auth
+             |
+             |
+        AI Feedback Engine
+             |
+             |
+        PostgreSQL Database
+```
 
-Notifications
+---
 
-User profile/avatar
+## 📊 Key Capabilities
 
-Current preparation 
+- Secure authentication
+- AI-powered feedback generation
+- Personalized learning roadmap
+- Technical interview practice
+- HR interview simulation
+- Performance analytics
+- Adaptive preparation workflow
+- Responsive dashboard
+- Modern SaaS user experience
 
+---
 
+## 🚀 Getting Started
 
-I will provide other contents as well, but since you cannot take everything at once, am splitting the contenrs
+### Clone Repository
 
-This project was built with [Lovable](https://lovable.dev).
+```bash
+git clone https://github.com/Harsha-devhub/interview-prep-ai.git
+```
 
-## Build with Lovable
+### Navigate
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/ece17ddb-db1a-4c47-91f1-49d7367a84e9).
+```bash
+cd interview-prep-ai
+```
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+### Install Dependencies
 
-## Development
+```bash
+npm install
+```
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+### Configure Environment
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+Create a `.env` file and add:
+
+```env
+SUPABASE_URL=YOUR_SUPABASE_URL
+SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+LOVABLE_API_KEY=YOUR_LOVABLE_API_KEY
+```
+
+### Start Development Server
+
+```bash
 npm run dev
 ```
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+ ├── components/
+ ├── routes/
+ ├── hooks/
+ ├── lib/
+ ├── services/
+ ├── providers/
+ ├── utils/
+ ├── styles/
+ └── types/
+```
+
+---
+
+## 📌 Future Enhancements
+
+- Voice-based mock interviews
+- Resume analysis
+- ATS Resume Checker
+- Coding playground
+- Live coding interviews
+- Company-specific interview tracks
+- Peer interview sessions
+- AI-generated flashcards
+- Interview scheduling
+- Recruiter dashboard
+
+---
+
+## 📸 Screenshots
+
+> Screenshots and demo GIFs will be added soon.
+
+---
+
+## 🌐 Live Demo
+
+Coming Soon
+
+---
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome.
+
+If you'd like to improve InterviewPrep AI, feel free to fork the repository and submit a pull request.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 👨‍💻 Author
+
+**Harsha**
+
+GitHub: https://github.com/Harsha-devhub
+
+LinkedIn: www.linkedin.com/in/harshavardhan-n-5a7172351
+
+---
+
+⭐ If you found this project helpful, consider giving it a star.
